@@ -3,13 +3,15 @@
 
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 enum class Type {
-   number, string, identifier, eof,
+   number, string, identifier, keyword, eof,
    tilde, grave, exclamation, at, hash, dollar, percent, caret, ampersand,
    asterisk, open_paren, close_paren, underscore, hyphen, plus, equal,
    open_brace, close_brace, open_bracket, close_bracket, pipe, backslash,
-   colon, semicolon, apostrophe, comma, less, greater, period, slash, question, 
+   colon, semicolon, apostrophe, comma, less, greater, period, slash, question,
+   times,
 };
 
 struct Token {
@@ -27,7 +29,11 @@ static const std::unordered_map<std::string_view, Type> operators {
    {"[", Type::open_bracket}, {"]", Type::close_bracket}, {"|", Type::pipe},
    {"\\", Type::backslash}, {":", Type::colon}, {";", Type::semicolon},
    {"'", Type::apostrophe}, {",", Type::comma}, {"<", Type::less}, {">", Type::greater},
-   {".", Type::period}, {"/", Type::slash}, {"?", Type::question}
+   {".", Type::period}, {"/", Type::slash}, {"?", Type::question}, {"X", Type::times}
+};
+
+static const std::unordered_set<std::string_view> keywords {
+   "VAR", "FUN", "WHL", "BRK", "CON", "RET"
 };
 
 #endif

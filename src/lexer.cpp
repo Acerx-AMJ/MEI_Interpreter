@@ -36,7 +36,12 @@ void lex(const std::string& code, std::vector<Token>& tokens) {
          for (; i < code.size() && (isalnum(code.at(i)) || code.at(i) == '_'); ++i) {
             identifier += code.at(i);
          }
-         tokens.push_back({Type::identifier, identifier});
+
+         if (keywords.find(identifier) != keywords.end()) {
+            tokens.push_back({Type::keyword, identifier});
+         } else {
+            tokens.push_back({Type::identifier, identifier});
+         }
          --i;
       } else if (ch == '"') {
          std::string string;

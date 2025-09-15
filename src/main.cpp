@@ -1,4 +1,5 @@
 #include "lexer.hpp"
+#include "parser.hpp"
 #include <fstream>
 #include <iostream>
 
@@ -22,8 +23,7 @@ int main(int argc, char* argv[]) {
    std::vector<Token> tokens;
    lex(code, tokens);
 
-   for (const auto& t : tokens) {
-      std::cout << int(t.type) << " " << t.lexeme << '\n';
-   }
+   Program program (std::vector<Stmt>{});
+   parse(tokens, program);
    return 0;
 }
