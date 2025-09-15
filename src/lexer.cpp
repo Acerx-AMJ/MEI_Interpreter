@@ -1,8 +1,16 @@
 #include "lexer.hpp"
+
+// Includes
+
 #include <iostream>
 #include <unordered_map>
 
-void lex(const std::string& code, std::vector<Token>& tokens) {
+// Lexer functions
+
+Lexer::Lexer(const std::string& code)
+   : code(code) {}
+
+std::vector<Token>& Lexer::lex() {
    for (int i = 0; i < code.size(); ++i) {
       char ch = code.at(i);
       
@@ -83,7 +91,10 @@ void lex(const std::string& code, std::vector<Token>& tokens) {
       }
    }
    tokens.push_back({Type::eof, "EOF"});
+   return tokens;
 }
+
+// Helper functions
 
 char as_escape(char ch) {
    static const std::unordered_map<char, char> escape_codes {

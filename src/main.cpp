@@ -1,7 +1,11 @@
+// Includes
+
 #include "lexer.hpp"
 #include "parser.hpp"
 #include <fstream>
 #include <iostream>
+
+// Main function
 
 int main(int argc, char* argv[]) {
    if (argc != 2) {
@@ -11,19 +15,13 @@ int main(int argc, char* argv[]) {
 
    std::string code = argv[1];
    std::ifstream file (code);
-   if (file.is_open()) {
-      std::string temp;
-      code.clear();
-      
-      while (std::getline(file, temp)) {
-         code += temp + '\n';
-      }
-   }
+   code = (file.is_open() ? std::string{std::istreambuf_iterator<char>{file}, {}} : code);
+   file.close();
    
-   std::vector<Token> tokens;
-   lex(code, tokens);
+   Lexer lexer (code);
+   auto& tokens = lexer.lex();
 
-   Program program (std::vector<Stmt>{});
-   parse(tokens, program);
+   Parser parser (tokens);
+   auto& program = parser.parse();
    return 0;
 }

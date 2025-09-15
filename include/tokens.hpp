@@ -1,9 +1,13 @@
 #ifndef TOKENS_HPP
 #define TOKENS_HPP
 
+// Includes
+
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+
+// Tokens
 
 enum class Type {
    number, string, identifier, keyword, eof,
@@ -18,6 +22,8 @@ struct Token {
    Type type;
    std::string lexeme;
 };
+
+// Maps
 
 constexpr int max_op_size = 2;
 static const std::unordered_map<std::string_view, Type> operators {

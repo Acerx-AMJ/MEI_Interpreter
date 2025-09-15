@@ -1,9 +1,13 @@
 #ifndef AST_HPP
 #define AST_HPP
 
+// Includes
+
 #include "tokens.hpp"
 #include <memory>
 #include <vector>
+
+// Statement
 
 enum class StmtType {
    var_decl, fn_decl, while_loop,
@@ -23,6 +27,10 @@ struct Statement {
    virtual ~Statement() = default;
 };
 
+// Statements
+
+// Variable declaration statement
+
 struct VarDecl : public Statement {
    Stmt identifier, value;
 
@@ -33,6 +41,8 @@ struct VarDecl : public Statement {
       return std::make_shared<VarDecl>(std::move(identifier), std::move(value));
    }   
 };
+
+// Function declaration statement
 
 struct FnDecl : public Statement {
    Stmt identifier, body;
@@ -46,6 +56,8 @@ struct FnDecl : public Statement {
    }
 };
 
+// While loop statement
+
 struct WhileLoop : public Statement {
    Stmt expr, body;
 
@@ -57,15 +69,21 @@ struct WhileLoop : public Statement {
    }
 };
 
+// Break statement
+
 struct BreakStmt : public Statement {
    BreakStmt() : Statement(StmtType::break_stmt) {}
    static Stmt make() { return std::make_shared<BreakStmt>(); }
 };
 
+// Continue statement
+
 struct ContinueStmt : public Statement {
    ContinueStmt() : Statement(StmtType::continue_stmt) {}
    static Stmt make() { return std::make_shared<ContinueStmt>(); }
 };
+
+// Return statement
 
 struct ReturnStmt : public Statement {
    Stmt value;
@@ -78,6 +96,10 @@ struct ReturnStmt : public Statement {
    }
 };
 
+// Expressions
+
+// Ternary expression
+
 struct TernaryExpr : public Statement {
    Stmt left, middle, right;
 
@@ -88,6 +110,8 @@ struct TernaryExpr : public Statement {
       return std::make_shared<TernaryExpr>(std::move(left), std::move(middle), std::move(right));
    }
 };
+
+// Call expression
 
 struct CallExpr : public Statement {
    Stmt identifier;
@@ -101,6 +125,8 @@ struct CallExpr : public Statement {
    }
 };
 
+// Command call expression
+
 struct Command : public Statement {
    Type op;
    long times = 1;
@@ -113,6 +139,10 @@ struct Command : public Statement {
    }
 };
 
+// Literals
+
+// Identifier literal
+
 struct IdentLiteral : public Statement {
    std::string identifier;
 
@@ -123,6 +153,8 @@ struct IdentLiteral : public Statement {
       return std::make_shared<IdentLiteral>(identifier);
    }
 };
+
+// Number literal
 
 struct NumberLiteral : public Statement {
    long number;
@@ -135,6 +167,8 @@ struct NumberLiteral : public Statement {
    }
 };
 
+// String literal
+
 struct StringLiteral : public Statement {
    std::string string;
 
@@ -145,6 +179,8 @@ struct StringLiteral : public Statement {
       return std::make_shared<StringLiteral>(string);
    }
 };
+
+// Program
 
 struct Program : public Statement {
    std::vector<Stmt> stmts;
