@@ -23,6 +23,7 @@ class Interpreter {
    Value evaluate_continue(Environment& env, Stmt stmt);
    Value evaluate_return(Environment& env, Stmt stmt);
    Value evaluate_push(Environment& env, Stmt stmt);
+   Value evaluate_type(Environment& env, Stmt stmt);
 
    // Expression evaluation functions
 

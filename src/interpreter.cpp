@@ -70,6 +70,8 @@ Value Interpreter::evaluate_stmt(Environment& env, Stmt stmt) {
       return evaluate_return(env, stmt);
    case StmtType::push:
       return evaluate_push(env, stmt);
+   case StmtType::type:
+      return evaluate_type(env, stmt);
    default:
       return evaluate_expr(env, stmt);
    }
@@ -116,7 +118,9 @@ Value Interpreter::evaluate_while_loop(Environment& env, Stmt stmt) {
    loop_stack.push(1);
 
    while (true) {
-      if (!evaluate_stmt(env, whl.expr)->as_bool()) {
+      auto a = evaluate_stmt(env, whl.expr);
+      if (!a->as_bool()) {
+         std::cout << a->as_string() << '\n';
          loop_stack.pop();
          return result;
       }
@@ -162,12 +166,12 @@ Value Interpreter::evaluate_return(Environment& env, Stmt stmt) {
 }
 
 Value Interpreter::evaluate_push(Environment& env, Stmt stmt) {
-   auto& psh = static_cast<PushExpr&>(*stmt.get());
+   auto& psh = static_cast<PushStmt&>(*stmt.get());
    auto value = evaluate_stmt(env, psh.stmt);
 
    if (value->type == ValueType::number) {
       stack::push(value->as_number());
-   } else if (value->type == ValueType::string) {
+   } else if (value->type != ValueType::null) {
       auto string = value->as_string();
       for (int i = string.size() - 1; i >= 0; --i) {
          stack::push(string[i]);
@@ -177,6 +181,15 @@ Value Interpreter::evaluate_push(Environment& env, Stmt stmt) {
       std::exit(1);
    }
    return value;
+}
+
+Value Interpreter::evaluate_type(Environment& env, Stmt stmt) {
+   auto& typ = static_cast<TypeStmt&>(*stmt.get());
+   auto value = evaluate_stmt(env, typ.stmt);
+   auto result = long(value->type);
+
+   stack::push(result);
+   return NumberValue::make(result);
 }
 
 // Expression evaluation functions
@@ -243,6 +256,13 @@ Value Interpreter::evaluate_command(Environment& env, Stmt stmt) {
          break;
       }
       case Type::exclamation:
+         if (stack::empty()) {
+            std::cerr << "Expected stack to not be empty.\n";
+            std::exit(1);
+         }
+         stack::push(!stack::pop());
+         final = NumberValue::make(stack::top());
+         break;
       case Type::at:
       case Type::hash:
       case Type::dollar:
@@ -271,7 +291,16 @@ Value Interpreter::evaluate_command(Environment& env, Stmt stmt) {
          final = NumberValue::make(result);
          break;
       }
-      case Type::equal:
+      case Type::equal: {
+         if (stack::size() < 2) {
+            std::cerr << "Expected stack to have at least 2 values.\n";
+            std::exit(1);
+         }
+         bool result = stack::pop() == stack::pop();
+         stack::push(result);
+         final = NumberValue::make(result);
+         break;
+      }
       case Type::pipe:
       case Type::backslash: {
          long a = stack::pop(), b = stack::pop();
@@ -284,7 +313,6 @@ Value Interpreter::evaluate_command(Environment& env, Stmt stmt) {
          stack::push(stack::top());
          final = NumberValue::make(stack::top());
          break;
-      case Type::semicolon:
       case Type::apostrophe:
       case Type::comma:
          if (stack::empty()) {
@@ -303,7 +331,6 @@ Value Interpreter::evaluate_command(Environment& env, Stmt stmt) {
          std::cout << stack::pop();
          break;
       case Type::slash:
-      case Type::question:
       case Type::size: {
          long size = stack::size();
          stack::push(size);

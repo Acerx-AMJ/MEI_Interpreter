@@ -100,10 +100,16 @@ Stmt Parser::parse_return_stmt() {
    return ReturnStmt::make(expr);
 }
 
-Stmt Parser::parse_push_expr() {
+Stmt Parser::parse_push_stmt() {
    advance();
    auto expr = parse_expr();
-   return PushExpr::make(expr);
+   return PushStmt::make(expr);
+}
+
+Stmt Parser::parse_type_stmt() {
+   advance();
+   auto expr = parse_expr();
+   return TypeStmt::make(expr);
 }
 
 // Parse expressions
@@ -115,12 +121,12 @@ Stmt Parser::parse_expr() {
 Stmt Parser::parse_ternary_expr() {
    auto left = parse_call_expr();
 
-   while (is(Type::question)) {
+   while (is(Type::thn)) {
       advance();
       auto middle = parse_expr();
 
-      if (!is(Type::colon)) {
-         std::cerr << "Expected a 'colon' after middle expression in ternary expression.\n";
+      if (!is(Type::els)) {
+         std::cerr << "Expected a 'els' after middle expression in ternary expression.\n";
          std::exit(1);
       }
       advance();
@@ -204,7 +210,9 @@ Stmt Parser::parse_primary_expr() {
    } else if (is(Type::keyword)) {
       return parse_stmt();
    } else if (is(Type::semicolon)) {
-      return parse_push_expr();
+      return parse_push_stmt();
+   } else if (is(Type::question)) {
+      return parse_type_stmt();
    } else if (is(Type::eof)) {
       std::cerr << "Unexpected token: 'EOF'.\n";
       std::exit(1);

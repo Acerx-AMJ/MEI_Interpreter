@@ -21,7 +21,8 @@ class Parser {
    Stmt parse_break_stmt();
    Stmt parse_continue_stmt();
    Stmt parse_return_stmt();
-   Stmt parse_push_expr();
+   Stmt parse_push_stmt();
+   Stmt parse_type_stmt();
 
    Stmt parse_expr();
    Stmt parse_ternary_expr();

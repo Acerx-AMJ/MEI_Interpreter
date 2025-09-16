@@ -10,6 +10,11 @@ Environment::Environment()
    set("NOP", NumberValue::make(0));
    set("YES", NumberValue::make(1));
    set("NIL", Null::make());
+
+   set("NMT", NumberValue::make(0));
+   set("STT", NumberValue::make(1));
+   set("FNT", NumberValue::make(2));
+   set("NLT", NumberValue::make(3));
 }
 
 // Functions

@@ -15,7 +15,7 @@ enum class Type {
    asterisk, open_paren, close_paren, hyphen, plus, equal, open_brace,
    close_brace, open_bracket, close_bracket, pipe, backslash, colon,
    semicolon, apostrophe, comma, less, greater, period, slash, question,
-   times, size,
+   times, size, thn, els,
 };
 
 struct Token {
@@ -39,11 +39,12 @@ static const std::unordered_map<std::string_view, Type> operators {
 };
 
 static const std::unordered_set<std::string_view> keywords {
-   "VAR", "FUN", "WHL", "BRK", "CON", "RET", "PSH", "X", "S",
+   "VAR", "FUN", "WHL", "BRK", "CON", "RET",
 };
 
 static const std::unordered_map<std::string_view, Type> keyword_ops {
-   {"PSH", Type::semicolon}, {"X", Type::times}, {"S", Type::size},
+   {"PSH", Type::semicolon}, {"X", Type::times}, {"S", Type::size}, {"TYP", Type::question},
+   {"THN", Type::thn}, {"ELS", Type::els}
 };
 
 #endif

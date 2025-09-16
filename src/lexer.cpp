@@ -38,10 +38,10 @@ std::vector<Token>& Lexer::lex() {
          }
          tokens.push_back({Type::number, number});
          --i;
-      } else if (isalpha(ch)) {
+      } else if (isalpha(ch) || ch == '_') {
          std::string identifier;
 
-         for (; i < code.size() && (isalnum(code.at(i)) || code.at(i) == '_'); ++i) {
+         for (; i < code.size() && (isalpha(code.at(i)) || code.at(i) == '_'); ++i) {
             identifier += code.at(i);
          }
 

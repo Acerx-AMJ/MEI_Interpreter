@@ -13,7 +13,7 @@
 enum class StmtType {
    var_decl, fn_decl, while_loop,
    break_stmt, continue_stmt, return_stmt,
-   ternary, call, command, push,
+   ternary, call, command, push, type,
    identifier, number, string, program
 };
 
@@ -97,6 +97,32 @@ struct ReturnStmt : public Statement {
    }
 };
 
+// Push statement
+
+struct PushStmt : public Statement {
+   Stmt stmt;
+
+   PushStmt(Stmt stmt)
+      : stmt(stmt), Statement(StmtType::push) {}
+   
+   static Stmt make(Stmt stmt) {
+      return std::make_shared<PushStmt>(stmt);
+   }
+};
+
+// Type statement
+
+struct TypeStmt : public Statement {
+   Stmt stmt;
+
+   TypeStmt(Stmt stmt)
+      : stmt(stmt), Statement(StmtType::type) {}
+   
+   static Stmt make(Stmt stmt) {
+      return std::make_shared<TypeStmt>(stmt);
+   }
+};
+
 // Expressions
 
 // Ternary expression
@@ -137,19 +163,6 @@ struct Command : public Statement {
    
    static Stmt make(Type op, std::optional<Stmt> right) {
       return std::make_shared<Command>(op, right);
-   }
-};
-
-// Push expression
-
-struct PushExpr : public Statement {
-   Stmt stmt;
-
-   PushExpr(Stmt stmt)
-      : stmt(stmt), Statement(StmtType::push) {}
-   
-   static Stmt make(Stmt stmt) {
-      return std::make_shared<PushExpr>(stmt);
    }
 };
 

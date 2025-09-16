@@ -80,7 +80,7 @@ struct Fn : public ValueLiteral {
    }
 
    std::string as_string() const override { return identifier; }
-   long as_number() const override { return 0; }
+   long as_number() const override { return identifier.size(); }
    bool as_bool() const override { return false; }
 };
 
