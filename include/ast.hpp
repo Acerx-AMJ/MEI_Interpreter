@@ -5,6 +5,7 @@
 
 #include "tokens.hpp"
 #include <memory>
+#include <optional>
 #include <vector>
 
 // Statement
@@ -12,7 +13,7 @@
 enum class StmtType {
    var_decl, fn_decl, while_loop,
    break_stmt, continue_stmt, return_stmt,
-   ternary, call, command,
+   ternary, call, command, push,
    identifier, number, string, program
 };
 
@@ -129,13 +130,26 @@ struct CallExpr : public Statement {
 
 struct Command : public Statement {
    Type op;
-   long times = 1;
+   std::optional<Stmt> right;
 
-   Command(Type op, long times = 1)
-      : op(op), times(times), Statement(StmtType::command) {}
+   Command(Type op, std::optional<Stmt> right)
+      : op(op), right(right), Statement(StmtType::command) {}
    
-   static Stmt make(Type op, long times = 1) {
-      return std::make_shared<Command>(op, times);
+   static Stmt make(Type op, std::optional<Stmt> right) {
+      return std::make_shared<Command>(op, right);
+   }
+};
+
+// Push expression
+
+struct PushExpr : public Statement {
+   Stmt stmt;
+
+   PushExpr(Stmt stmt)
+      : stmt(stmt), Statement(StmtType::push) {}
+   
+   static Stmt make(Stmt stmt) {
+      return std::make_shared<PushExpr>(stmt);
    }
 };
 

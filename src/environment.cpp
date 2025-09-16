@@ -29,7 +29,7 @@ Environment& Environment::resolve(const std::string& identifier) {
    }
 
    if (!parent) {
-      std::cerr << "Variable does not exist.\n";
+      std::cerr << "Variable '" << identifier << "' does not exist.\n";
       std::exit(1);
    }
    return parent->resolve(identifier);

@@ -1,5 +1,6 @@
 // Includes
 
+#include "interpreter.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
 #include <fstream>
@@ -23,5 +24,9 @@ int main(int argc, char* argv[]) {
 
    Parser parser (tokens);
    auto& program = parser.parse();
+
+   Environment env;
+   Interpreter interpreter;
+   interpreter.evaluate(program, env);
    return 0;
 }

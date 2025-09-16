@@ -7,7 +7,7 @@
 // Value
 
 enum class ValueType {
-   identifier, number, string, fn, null
+   number, string, fn, null
 };
 
 struct ValueLiteral;
@@ -26,23 +26,6 @@ struct ValueLiteral {
    virtual std::string as_string() const = 0;
    virtual long as_number() const = 0;
    virtual bool as_bool() const = 0;
-};
-
-// Identifier value
-
-struct IdentValue : public ValueLiteral {
-   std::string identifier;
-
-   IdentValue(const std::string& identifier)
-      : identifier(identifier), ValueLiteral(ValueType::identifier) {}
-   
-   static Value make(const std::string& identifier) {
-      return std::make_shared<IdentValue>(identifier);
-   }
-
-   std::string as_string() const override { return identifier; }
-   long as_number() const override { return 0; }
-   bool as_bool() const override { return false; }
 };
 
 // Number value
@@ -75,13 +58,7 @@ struct StringValue : public ValueLiteral {
    }
 
    std::string as_string() const override { return string; }
-   long as_number() const override {
-      try {
-         return std::stol(string);
-      } catch (...) {
-         return 0;
-      }
-   }
+   long as_number() const override { return string.size(); }
    bool as_bool() const override { return !string.empty(); }
 };
 

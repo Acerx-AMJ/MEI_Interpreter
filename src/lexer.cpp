@@ -45,7 +45,9 @@ std::vector<Token>& Lexer::lex() {
             identifier += code.at(i);
          }
 
-         if (keywords.find(identifier) != keywords.end()) {
+         if (auto it = keyword_ops.find(identifier); it != keyword_ops.end()) {
+            tokens.push_back({it->second, identifier});
+         } else if (keywords.find(identifier) != keywords.end()) {
             tokens.push_back({Type::keyword, identifier});
          } else {
             tokens.push_back({Type::identifier, identifier});
@@ -96,7 +98,7 @@ std::vector<Token>& Lexer::lex() {
 
 // Helper functions
 
-char as_escape(char ch) {
+char Lexer::as_escape(char ch) {
    static const std::unordered_map<char, char> escape_codes {
       {'a', '\a'}, {'b', '\b'}, {'t', '\t'}, {'n', '\n'}, {'v', '\v'}, {'f', '\f'},
       {'r', '\r'}, {'e', '\e'}, {'\\', '\\'}, {'\'', '\''}, {'"', '"'}

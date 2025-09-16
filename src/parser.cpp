@@ -22,7 +22,7 @@ Program& Parser::parse() {
 
 Stmt Parser::parse_stmt() {
    auto& token = current();
-   
+
    if (token.lexeme == "VAR") {
       return parse_var_decl();
    } else if (token.lexeme == "FUN") {
@@ -36,7 +36,7 @@ Stmt Parser::parse_stmt() {
    } else if (token.lexeme == "RET") {
       return parse_return_stmt();
    } else {
-      std::cerr << "Segmentation fault (core dumped).\n";
+      std::cerr << "Unknown keyword.\n";
       std::exit(1);
    }
 }
@@ -73,6 +73,7 @@ Stmt Parser::parse_fn_decl() {
       std::cerr << "Unterminated parameter list.\n";
       std::exit(1);
    }
+   advance();
    auto body = parse_expr();
    return FnDecl::make(identifier, body, params);
 }
@@ -97,6 +98,12 @@ Stmt Parser::parse_return_stmt() {
    advance();
    auto expr = parse_expr();
    return ReturnStmt::make(expr);
+}
+
+Stmt Parser::parse_push_expr() {
+   advance();
+   auto expr = parse_expr();
+   return PushExpr::make(expr);
 }
 
 // Parse expressions
@@ -141,6 +148,7 @@ Stmt Parser::parse_call_expr() {
          std::cerr << "Unterminated argument list.\n";
          std::exit(1);
       }
+      advance();
       identifier = CallExpr::make(identifier, args);
    }
    return identifier;
@@ -195,6 +203,8 @@ Stmt Parser::parse_primary_expr() {
       return program;
    } else if (is(Type::keyword)) {
       return parse_stmt();
+   } else if (is(Type::semicolon)) {
+      return parse_push_expr();
    } else if (is(Type::eof)) {
       std::cerr << "Unexpected token: 'EOF'.\n";
       std::exit(1);
@@ -205,14 +215,9 @@ Stmt Parser::parse_primary_expr() {
       if (is(Type::times)) {
          advance();
          auto times = parse_expr();
-
-         if (times->type != StmtType::number) {
-            std::cerr << "Expected a number after 'X' operator.\n";
-            std::exit(1);
-         }
-         return Command::make(type, static_cast<NumberLiteral&>(*times).number);
+         return Command::make(type, std::optional(times));
       }
-      return Command::make(type);
+      return Command::make(type, std::nullopt);
    }
 }
 
