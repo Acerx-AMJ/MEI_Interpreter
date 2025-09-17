@@ -13,7 +13,7 @@
 enum class StmtType {
    var_decl, fn_decl, while_loop,
    break_stmt, continue_stmt, return_stmt,
-   ternary, call, command, push, type,
+   ternary, call, command, push, type, pull,
    identifier, number, string, program
 };
 
@@ -60,13 +60,13 @@ struct FnDecl : public Statement {
 // While loop statement
 
 struct WhileLoop : public Statement {
-   Stmt expr, body;
+   Stmt body;
 
-   WhileLoop(Stmt expr, Stmt body)
-      : expr(expr), body(body), Statement(StmtType::while_loop) {}
+   WhileLoop(Stmt body)
+      : body(body), Statement(StmtType::while_loop) {}
    
-   static Stmt make(Stmt expr, Stmt body) {
-      return std::make_shared<WhileLoop>(std::move(expr), std::move(body));
+   static Stmt make(Stmt body) {
+      return std::make_shared<WhileLoop>(std::move(body));
    }
 };
 
@@ -90,7 +90,7 @@ struct ReturnStmt : public Statement {
    Stmt value;
 
    ReturnStmt(Stmt value)
-      : value(value), Statement(StmtType::break_stmt) {}
+      : value(value), Statement(StmtType::return_stmt) {}
 
    static Stmt make(Stmt value) {
       return std::make_shared<ReturnStmt>(std::move(value));
@@ -123,18 +123,25 @@ struct TypeStmt : public Statement {
    }
 };
 
+// Pull statement
+
+struct PullStmt : public Statement {
+   PullStmt() : Statement(StmtType::pull) {}
+   static Stmt make() { return std::make_shared<PullStmt>(); }
+};
+
 // Expressions
 
 // Ternary expression
 
 struct TernaryExpr : public Statement {
-   Stmt left, middle, right;
+   Stmt left, right;
 
-   TernaryExpr(Stmt left, Stmt middle, Stmt right)
-      : left(left), middle(middle), right(right), Statement(StmtType::ternary) {}
+   TernaryExpr(Stmt left, Stmt right)
+      : left(left), right(right), Statement(StmtType::ternary) {}
    
-   static Stmt make(Stmt left, Stmt middle, Stmt right) {
-      return std::make_shared<TernaryExpr>(std::move(left), std::move(middle), std::move(right));
+   static Stmt make(Stmt left, Stmt right) {
+      return std::make_shared<TernaryExpr>(std::move(left), std::move(right));
    }
 };
 

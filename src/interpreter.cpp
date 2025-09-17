@@ -3,6 +3,7 @@
 // Includes
 
 #include "stack.hpp"
+#include <cmath>
 #include <limits>
 #include <termios.h>
 #include <unistd.h>
@@ -72,6 +73,8 @@ Value Interpreter::evaluate_stmt(Environment& env, Stmt stmt) {
       return evaluate_push(env, stmt);
    case StmtType::type:
       return evaluate_type(env, stmt);
+   case StmtType::pull:
+      return evaluate_pull(env, stmt);
    default:
       return evaluate_expr(env, stmt);
    }
@@ -118,9 +121,7 @@ Value Interpreter::evaluate_while_loop(Environment& env, Stmt stmt) {
    loop_stack.push(1);
 
    while (true) {
-      auto a = evaluate_stmt(env, whl.expr);
-      if (!a->as_bool()) {
-         std::cout << a->as_string() << '\n';
+      if (stack::empty() || !stack::pop()) {
          loop_stack.pop();
          return result;
       }
@@ -192,6 +193,14 @@ Value Interpreter::evaluate_type(Environment& env, Stmt stmt) {
    return NumberValue::make(result);
 }
 
+Value Interpreter::evaluate_pull(Environment& env, Stmt stmt) {
+   if (stack::empty()) {
+      std::cerr << "'#': Expected stack to not be empty.\n";
+      std::exit(1);
+   }
+   return NumberValue::make(stack::pop());
+}
+
 // Expression evaluation functions
 
 Value Interpreter::evaluate_expr(Environment& env, Stmt stmt) {
@@ -209,8 +218,8 @@ Value Interpreter::evaluate_expr(Environment& env, Stmt stmt) {
 
 Value Interpreter::evaluate_ternary_expr(Environment& env, Stmt stmt) {
    auto& ternary = static_cast<TernaryExpr&>(*stmt.get());
-   auto left = evaluate_stmt(env, ternary.left);
-   return evaluate_stmt(env, (left->as_bool() ? ternary.middle : ternary.right));
+   auto cond = (!stack::empty() && stack::pop());
+   return evaluate_stmt(env, (cond ? ternary.left : ternary.right));
 }
 
 Value Interpreter::evaluate_call_expr(Environment& env, Stmt stmt) {
@@ -257,19 +266,42 @@ Value Interpreter::evaluate_command(Environment& env, Stmt stmt) {
       }
       case Type::exclamation:
          if (stack::empty()) {
-            std::cerr << "Expected stack to not be empty.\n";
+            std::cerr << "'!': Expected stack to not be empty.\n";
             std::exit(1);
          }
          stack::push(!stack::pop());
          final = NumberValue::make(stack::top());
          break;
       case Type::at:
-      case Type::hash:
+         std::exit(0);
       case Type::dollar:
          final = NumberValue::make(stack::pop());
          break;
-      case Type::percent:
-      case Type::caret:
+      case Type::percent: {
+         if (stack::size() < 2) {
+            std::cerr << "'%': Expected stack to have at least 2 values.\n";
+            std::exit(1);
+         }
+         long a = stack::pop(), b = stack::pop();
+         if (a == 0) {
+            std::cerr << "Division by zero error.\n";
+            std::exit(1);
+         }
+         long result = b % a;
+         stack::push(result);
+         final = NumberValue::make(result);
+         break;
+      }
+      case Type::caret: {
+         if (stack::empty()) {
+            std::cerr << "'^': Expected stack to not be empty.\n";
+            std::exit(1);
+         }
+         long result = std::sqrt(stack::pop());
+         stack::push(result);
+         final = NumberValue::make(result);
+         break;
+      }
       case Type::ampersand: {
          std::string string;
          std::getline(std::cin >> std::ws, string);
@@ -279,11 +311,30 @@ Value Interpreter::evaluate_command(Environment& env, Stmt stmt) {
          final = StringValue::make(string);
          break;
       }
-      case Type::asterisk:
-      case Type::hyphen:
+      case Type::asterisk: {
+         if (stack::size() < 2) {
+            std::cerr << "'*': Expected stack to have at least 2 values.\n";
+            std::exit(1);
+         }
+         long result = stack::pop() * stack::pop();
+         stack::push(result);
+         final = NumberValue::make(result);
+         break;
+      }
+      case Type::hyphen: {
+         if (stack::size() < 2) {
+            std::cerr << "'-': Expected stack to have at least 2 values.\n";
+            std::exit(1);
+         }
+         long a = stack::pop(), b = stack::pop();
+         long result = b - a;
+         stack::push(result);
+         final = NumberValue::make(result);
+         break;
+      }
       case Type::plus: {
          if (stack::size() < 2) {
-            std::cerr << "Expected stack to have at least 2 values.\n";
+            std::cerr << "'+': Expected stack to have at least 2 values.\n";
             std::exit(1);
          }
          long result = stack::pop() + stack::pop();
@@ -293,7 +344,7 @@ Value Interpreter::evaluate_command(Environment& env, Stmt stmt) {
       }
       case Type::equal: {
          if (stack::size() < 2) {
-            std::cerr << "Expected stack to have at least 2 values.\n";
+            std::cerr << "'=': Expected stack to have at least 2 values.\n";
             std::exit(1);
          }
          bool result = stack::pop() == stack::pop();
@@ -301,7 +352,6 @@ Value Interpreter::evaluate_command(Environment& env, Stmt stmt) {
          final = NumberValue::make(result);
          break;
       }
-      case Type::pipe:
       case Type::backslash: {
          long a = stack::pop(), b = stack::pop();
          stack::push(a);
@@ -313,24 +363,64 @@ Value Interpreter::evaluate_command(Environment& env, Stmt stmt) {
          stack::push(stack::top());
          final = NumberValue::make(stack::top());
          break;
-      case Type::apostrophe:
+      case Type::apostrophe: {
+         if (stack::empty()) {
+            std::cerr << "''': Expected stack to not be empty.\n";
+            std::exit(1);
+         }
+         stack::push(-stack::pop());
+         final = NumberValue::make(stack::top());
+         break;
+      }
       case Type::comma:
          if (stack::empty()) {
-            std::cerr << "Expected stack to not be empty.\n";
+            std::cerr << "',': Expected stack to not be empty.\n";
             std::exit(1);
          }
          std::cout << char(stack::pop());
          break;
-      case Type::less:
-      case Type::greater:
+      case Type::less: {
+         if (stack::size() < 2) {
+            std::cerr << "'<': Expected stack to have at least 2 values.\n";
+            std::exit(1);
+         }
+         long result = stack::pop() > stack::pop();
+         stack::push(result);
+         final = NumberValue::make(result);
+         break;
+      }
+      case Type::greater: {
+         if (stack::size() < 2) {
+            std::cerr << "'>': Expected stack to have at least 2 values.\n";
+            std::exit(1);
+         }
+         long result = stack::pop() < stack::pop();
+         stack::push(result);
+         final = NumberValue::make(result);
+         break;
+      }
       case Type::period:
          if (stack::empty()) {
-            std::cerr << "Expected stack to not be empty.\n";
+            std::cerr << "'.': Expected stack to not be empty.\n";
             std::exit(1);
          }
          std::cout << stack::pop();
          break;
-      case Type::slash:
+      case Type::slash: {
+         if (stack::size() < 2) {
+            std::cerr << "'/': Expected stack to have at least 2 values.\n";
+            std::exit(1);
+         }
+         long a = stack::pop(), b = stack::pop();
+         if (a == 0) {
+            std::cerr << "Division by zero error.\n";
+            std::exit(1);
+         }
+         long result = b / a;
+         stack::push(result);
+         final = NumberValue::make(result);
+         break;
+      }
       case Type::size: {
          long size = stack::size();
          stack::push(size);

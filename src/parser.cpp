@@ -43,14 +43,7 @@ Stmt Parser::parse_stmt() {
 
 Stmt Parser::parse_var_decl() {
    advance();
-   auto identifier = parse_expr();
-
-   if (!is(Type::equal)) {
-      std::cerr << "Expected 'equal' token after identifier in variable declaration.\n";
-      std::exit(1);
-   }
-   advance();
-   auto value = parse_expr();
+   auto identifier = parse_expr(), value = parse_expr();
    return VarDecl::make(identifier, value);
 }
 
@@ -80,8 +73,8 @@ Stmt Parser::parse_fn_decl() {
 
 Stmt Parser::parse_while_loop() {
    advance();
-   auto expr = parse_expr(), body = parse_expr();
-   return WhileLoop::make(expr, body);
+   auto body = parse_expr();
+   return WhileLoop::make(body);
 }
 
 Stmt Parser::parse_break_stmt() {
@@ -121,17 +114,10 @@ Stmt Parser::parse_expr() {
 Stmt Parser::parse_ternary_expr() {
    auto left = parse_call_expr();
 
-   while (is(Type::thn)) {
-      advance();
-      auto middle = parse_expr();
-
-      if (!is(Type::els)) {
-         std::cerr << "Expected a 'els' after middle expression in ternary expression.\n";
-         std::exit(1);
-      }
+   while (is(Type::pipe)) {
       advance();
       auto right = parse_expr();
-      left = TernaryExpr::make(left, middle, right);
+      left = TernaryExpr::make(left, right);
    }
    return left;
 }
@@ -182,16 +168,6 @@ Stmt Parser::parse_primary_expr() {
       std::string string = current().lexeme;
       advance();
       return StringLiteral::make(string);
-   } else if (is(Type::open_paren)) {
-      advance();
-      auto value = parse_expr();
-
-      if (!is(Type::close_paren)) {
-         std::cerr << "Unterminated parentheses.\n";
-         std::exit(1);
-      }
-      advance();
-      return value;
    } else if (is(Type::open_brace)) {
       advance();
       auto program = std::make_shared<Program>(std::vector<Stmt>{});
@@ -213,6 +189,9 @@ Stmt Parser::parse_primary_expr() {
       return parse_push_stmt();
    } else if (is(Type::question)) {
       return parse_type_stmt();
+   } else if (is(Type::hash)) {
+      advance();
+      return PullStmt::make();
    } else if (is(Type::eof)) {
       std::cerr << "Unexpected token: 'EOF'.\n";
       std::exit(1);

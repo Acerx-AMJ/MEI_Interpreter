@@ -44,7 +44,7 @@ static const std::unordered_set<std::string_view> keywords {
 
 static const std::unordered_map<std::string_view, Type> keyword_ops {
    {"PSH", Type::semicolon}, {"X", Type::times}, {"S", Type::size}, {"TYP", Type::question},
-   {"THN", Type::thn}, {"ELS", Type::els}
+   {"PUL", Type::hash},
 };
 
 #endif
