@@ -7,7 +7,7 @@
 // Value
 
 enum class ValueType {
-   number, string, fn, null
+   number, string, fn, array, null
 };
 
 struct ValueLiteral;
@@ -82,6 +82,30 @@ struct Fn : public ValueLiteral {
    std::string as_string() const override { return identifier; }
    long as_number() const override { return identifier.size(); }
    bool as_bool() const override { return false; }
+};
+
+// Array value
+
+struct Array : public ValueLiteral {
+   std::vector<Value> array;
+
+   Array(std::vector<Value> array)
+      : array(array), ValueLiteral(ValueType::array) {}
+   
+   static Value make(std::vector<Value> array) {
+      return std::make_shared<Array>(array);
+   }
+
+   std::string as_string() const override {
+      std::string result;
+      for (const auto& element : array) {
+         result += element->as_string();
+      }
+      return result;
+   }
+
+   long as_number() const override { return array.size(); }
+   bool as_bool() const override {return !array.empty(); }
 };
 
 // Null value

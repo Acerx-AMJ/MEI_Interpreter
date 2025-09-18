@@ -12,9 +12,9 @@
 
 enum class StmtType {
    var_decl, fn_decl, while_loop, import,
-   break_stmt, continue_stmt, return_stmt,
+   break_stmt, continue_stmt,
    ternary, call, command, push, type, pull,
-   identifier, number, string, program
+   identifier, number, string, array, program
 };
 
 struct Statement;
@@ -95,19 +95,6 @@ struct BreakStmt : public Statement {
 struct ContinueStmt : public Statement {
    ContinueStmt() : Statement(StmtType::continue_stmt) {}
    static Stmt make() { return std::make_shared<ContinueStmt>(); }
-};
-
-// Return statement
-
-struct ReturnStmt : public Statement {
-   Stmt value;
-
-   ReturnStmt(Stmt value)
-      : value(value), Statement(StmtType::return_stmt) {}
-
-   static Stmt make(Stmt value) {
-      return std::make_shared<ReturnStmt>(std::move(value));
-   }
 };
 
 // Push statement
@@ -224,6 +211,19 @@ struct StringLiteral : public Statement {
    
    static Stmt make(const std::string& string) {
       return std::make_shared<StringLiteral>(string);
+   }
+};
+
+// Array literal
+
+struct ArrayLiteral : public Statement {
+   std::vector<Stmt> stmts;
+
+   ArrayLiteral(std::vector<Stmt> stmts)
+      : stmts(stmts), Statement(StmtType::array) {}
+   
+   static Stmt make(std::vector<Stmt> stmts) {
+      return std::make_shared<ArrayLiteral>(std::move(stmts));
    }
 };
 

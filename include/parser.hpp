@@ -20,7 +20,6 @@ class Parser {
    Stmt parse_while_loop();
    Stmt parse_break_stmt();
    Stmt parse_continue_stmt();
-   Stmt parse_return_stmt();
    Stmt parse_push_stmt();
    Stmt parse_type_stmt();
    Stmt parse_import();

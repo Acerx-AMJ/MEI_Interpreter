@@ -40,12 +40,12 @@ static const std::unordered_map<std::string_view, Type> operators {
 };
 
 static const std::unordered_set<std::string_view> keywords {
-   "VAR", "FUN", "WHL", "BRK", "CON", "RET", "IMP",
+   "Const", "Fn", "While", "Break", "Continue", "Import",
 };
 
 static const std::unordered_map<std::string_view, Type> keyword_ops {
-   {"PSH", Type::semicolon}, {"X", Type::times}, {"S", Type::size}, {"TYP", Type::question},
-   {"PUL", Type::hash},
+   {"Push", Type::semicolon}, {"X", Type::times}, {"S", Type::size}, {"Type", Type::question},
+   {"Pull", Type::hash},
 };
 
 #endif

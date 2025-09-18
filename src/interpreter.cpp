@@ -69,8 +69,6 @@ Value Interpreter::evaluate_stmt(Environment& env, Stmt stmt) {
       return evaluate_break(env, stmt);
    case StmtType::continue_stmt:
       return evaluate_continue(env, stmt);
-   case StmtType::return_stmt:
-      return evaluate_return(env, stmt);
    case StmtType::push:
       return evaluate_push(env, stmt);
    case StmtType::type:
@@ -161,21 +159,16 @@ Value Interpreter::evaluate_continue(Environment& env, Stmt stmt) {
    return Null::make();
 }
 
-Value Interpreter::evaluate_return(Environment& env, Stmt stmt) {
-   if (fn_stack.empty()) {
-      std::cerr << "'ReturnStmt' outside of a function.\n";
-      std::exit(1);
-   }
-   return_stack.push(fn_counter);
-   return evaluate_stmt(env, static_cast<ReturnStmt&>(*stmt.get()).value);
-}
+// Helper function
 
-Value Interpreter::evaluate_push(Environment& env, Stmt stmt) {
-   auto& psh = static_cast<PushStmt&>(*stmt.get());
-   auto value = evaluate_stmt(env, psh.stmt);
-
+void push_to_stack(Value value) {
    if (value->type == ValueType::number) {
       stack::push(value->as_number());
+   } else if (value->type == ValueType::array) {
+      auto& array = static_cast<Array&>(*value.get());
+      for (auto& element : array.array) {
+         push_to_stack(element);
+      }
    } else if (value->type != ValueType::null) {
       auto string = value->as_string();
       for (int i = string.size() - 1; i >= 0; --i) {
@@ -185,6 +178,12 @@ Value Interpreter::evaluate_push(Environment& env, Stmt stmt) {
       std::cerr << "Invalid value to push to stack.\n";
       std::exit(1);
    }
+}
+
+Value Interpreter::evaluate_push(Environment& env, Stmt stmt) {
+   auto& psh = static_cast<PushStmt&>(*stmt.get());
+   auto value = evaluate_stmt(env, psh.stmt);
+   push_to_stack(value);
    return value;
 }
 
@@ -501,6 +500,13 @@ Value Interpreter::evaluate_primary_expr(Environment& env, Stmt stmt) {
       return NumberValue::make(static_cast<NumberLiteral&>(*stmt.get()).number);
    case StmtType::string:
       return StringValue::make(static_cast<StringLiteral&>(*stmt.get()).string);
+   case StmtType::array: {
+      std::vector<Value> array;
+      for (const auto& element : static_cast<ArrayLiteral&>(*stmt.get()).stmts) {
+         array.push_back(evaluate_stmt(env, element));
+      }
+      return Array::make(array);
+   }
    case StmtType::program: {
       Environment new_env (&env);
       return evaluate(static_cast<Program&>(*stmt.get()), new_env);

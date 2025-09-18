@@ -23,19 +23,17 @@ Program& Parser::parse() {
 Stmt Parser::parse_stmt() {
    auto& token = current();
 
-   if (token.lexeme == "VAR") {
+   if (token.lexeme == "Const") {
       return parse_var_decl();
-   } else if (token.lexeme == "FUN") {
+   } else if (token.lexeme == "Fn") {
       return parse_fn_decl();
-   } else if (token.lexeme == "WHL") {
+   } else if (token.lexeme == "While") {
       return parse_while_loop();
-   } else if (token.lexeme == "BRK") {
+   } else if (token.lexeme == "Break") {
       return parse_break_stmt();
-   } else if (token.lexeme == "CON") {
+   } else if (token.lexeme == "Continue") {
       return parse_continue_stmt();
-   } else if (token.lexeme == "RET") {
-      return parse_return_stmt();
-   } else if (token.lexeme == "IMP") {
+   } else if (token.lexeme == "Import") {
       return parse_import();
    } else {
       std::cerr << "Unknown keyword.\n";
@@ -87,12 +85,6 @@ Stmt Parser::parse_break_stmt() {
 Stmt Parser::parse_continue_stmt() {
    advance();
    return ContinueStmt::make();
-}
-
-Stmt Parser::parse_return_stmt() {
-   advance();
-   auto expr = parse_expr();
-   return ReturnStmt::make(expr);
 }
 
 Stmt Parser::parse_push_stmt() {
@@ -178,19 +170,24 @@ Stmt Parser::parse_primary_expr() {
       return StringLiteral::make(string);
    } else if (is(Type::open_brace)) {
       advance();
-      auto program = std::make_shared<Program>(std::vector<Stmt>{});
+      std::vector<Stmt> stmts;
 
       while (!is(Type::close_brace)) {
          auto stmt = parse_expr();
-         program->stmts.push_back(stmt);
-      }
-
-      if (!is(Type::close_brace)) {
-         std::cerr << "Unterminated scope.\n";
-         std::exit(1);
+         stmts.push_back(stmt);
       }
       advance();
-      return program;
+      return Program::make(stmts);
+   } else if (is(Type::open_bracket)) {
+      advance();
+      std::vector<Stmt> stmts;
+
+      while (!is(Type::close_bracket)) {
+         auto stmt = parse_expr();
+         stmts.push_back(stmt);
+      }
+      advance();
+      return ArrayLiteral::make(stmts);
    } else if (is(Type::keyword)) {
       return parse_stmt();
    } else if (is(Type::semicolon)) {
