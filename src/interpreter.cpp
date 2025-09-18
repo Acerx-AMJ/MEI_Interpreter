@@ -2,9 +2,11 @@
 
 // Includes
 
+#include "lexer.hpp"
+#include "parser.hpp"
 #include "stack.hpp"
 #include <cmath>
-#include <limits>
+#include <fstream>
 #include <termios.h>
 #include <unistd.h>
 
@@ -75,6 +77,8 @@ Value Interpreter::evaluate_stmt(Environment& env, Stmt stmt) {
       return evaluate_type(env, stmt);
    case StmtType::pull:
       return evaluate_pull(env, stmt);
+   case StmtType::import:
+      return evaluate_import(env, stmt);
    default:
       return evaluate_expr(env, stmt);
    }
@@ -199,6 +203,22 @@ Value Interpreter::evaluate_pull(Environment& env, Stmt stmt) {
       std::exit(1);
    }
    return NumberValue::make(stack::pop());
+}
+
+Value Interpreter::evaluate_import(Environment& env, Stmt stmt) {
+   auto& imp = static_cast<ImportStmt&>(*stmt.get());
+   auto code = evaluate_stmt(env, imp.import)->as_string();
+   std::ifstream file (code);
+   code = (file.is_open() ? std::string{std::istreambuf_iterator<char>{file}, {}} : code);
+   file.close();
+   
+   Lexer lexer (code);
+   auto& tokens = lexer.lex();
+
+   Parser parser (tokens);
+   auto& program = parser.parse();
+
+   return evaluate(program, env);
 }
 
 // Expression evaluation functions

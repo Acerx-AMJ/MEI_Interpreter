@@ -39,7 +39,7 @@ static const std::unordered_map<std::string_view, Type> operators {
 };
 
 static const std::unordered_set<std::string_view> keywords {
-   "VAR", "FUN", "WHL", "BRK", "CON", "RET",
+   "VAR", "FUN", "WHL", "BRK", "CON", "RET", "IMP",
 };
 
 static const std::unordered_map<std::string_view, Type> keyword_ops {

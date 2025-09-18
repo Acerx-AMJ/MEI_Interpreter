@@ -35,6 +35,8 @@ Stmt Parser::parse_stmt() {
       return parse_continue_stmt();
    } else if (token.lexeme == "RET") {
       return parse_return_stmt();
+   } else if (token.lexeme == "IMP") {
+      return parse_import();
    } else {
       std::cerr << "Unknown keyword.\n";
       std::exit(1);
@@ -103,6 +105,12 @@ Stmt Parser::parse_type_stmt() {
    advance();
    auto expr = parse_expr();
    return TypeStmt::make(expr);
+}
+
+Stmt Parser::parse_import() {
+   advance();
+   auto import = parse_expr();
+   return ImportStmt::make(import);
 }
 
 // Parse expressions

@@ -23,6 +23,7 @@ class Parser {
    Stmt parse_return_stmt();
    Stmt parse_push_stmt();
    Stmt parse_type_stmt();
+   Stmt parse_import();
 
    Stmt parse_expr();
    Stmt parse_ternary_expr();

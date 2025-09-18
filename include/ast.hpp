@@ -11,7 +11,7 @@
 // Statement
 
 enum class StmtType {
-   var_decl, fn_decl, while_loop,
+   var_decl, fn_decl, while_loop, import,
    break_stmt, continue_stmt, return_stmt,
    ternary, call, command, push, type, pull,
    identifier, number, string, program
@@ -67,6 +67,19 @@ struct WhileLoop : public Statement {
    
    static Stmt make(Stmt body) {
       return std::make_shared<WhileLoop>(std::move(body));
+   }
+};
+
+// Import statement
+
+struct ImportStmt : public Statement {
+   Stmt import;
+
+   ImportStmt(Stmt import)
+      : import(import), Statement(StmtType::import) {}
+   
+   static Stmt make(Stmt import) {
+      return std::make_shared<ImportStmt>(std::move(import));
    }
 };
 
