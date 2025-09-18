@@ -447,6 +447,43 @@ Value Interpreter::evaluate_command(Environment& env, Stmt stmt) {
          final = NumberValue::make(size);
          break;
       }
+      case Type::set_reg: {
+         long value = (stack::empty() ? 0 : stack::pop());
+         if (!stack::empty()) {
+            reg::set(stack::pop(), value);
+         }
+         final = NumberValue::make(value);
+         break;
+      }
+      case Type::get_reg: {
+         long value = 0;
+         if (!stack::empty()) {
+            value = reg::get(stack::pop());
+         }
+         stack::push(value);
+         final = NumberValue::make(value);
+         break;
+      }
+      case Type::lor: {
+         if (stack::size() < 2) {
+            std::cerr << "'||': Expected stack to have at least 2 values.\n";
+            std::exit(1);
+         }
+         long result = stack::pop() || stack::pop();
+         stack::push(result);
+         final = NumberValue::make(result);
+         break;
+      }
+      case Type::land: {
+         if (stack::size() < 2) {
+            std::cerr << "'&&': Expected stack to have at least 2 values.\n";
+            std::exit(1);
+         }
+         long result = stack::pop() && stack::pop();
+         stack::push(result);
+         final = NumberValue::make(result);
+         break;
+      }
       default:
          std::cerr << "Unknown command '" << int(command.op) << "'.\n";
          std::exit(1);
